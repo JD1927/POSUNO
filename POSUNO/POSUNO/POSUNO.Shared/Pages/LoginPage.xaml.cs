@@ -1,4 +1,5 @@
 ﻿using POSUNO.Helpers;
+using POSUNO.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,7 +38,25 @@ namespace POSUNO.Pages
             {
                 return;
             }
-            MessageDialog messageDialog = new MessageDialog("Vamos melos", "Good");
+            APIResponse response = await APIService.LoginAsync(new LoginRequest()
+            {
+                Email = EmailTextBox.Text,
+                Password = PasswordBox.Password,
+            });
+            MessageDialog messageDialog;
+            if (!response.IsSuccess)
+            {
+                messageDialog = new MessageDialog(response.Message, "Error");
+                await messageDialog.ShowAsync();
+            }
+            User user = (User)response.Result;
+            if (user == null)
+            {
+                messageDialog = new MessageDialog("Usuario y/o contrasseña inválidos", "Error");
+                await messageDialog.ShowAsync();
+                return;
+            }
+            messageDialog = new MessageDialog($"Bienvenido {user.FullName}", "Éxito");
             await messageDialog.ShowAsync();
         }
 
