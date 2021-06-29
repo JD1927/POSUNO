@@ -27,6 +27,7 @@ namespace POSUNO.API.Data.Entities
         [MaxLength(20)]
         public string Password { get; set; }
 
+        [Required]
         public ICollection<Product> Products { get; set; }
     }
 }
