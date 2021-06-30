@@ -31,7 +31,7 @@ namespace POSUNO.Pages
         {
             InitializeComponent();
             EmailTextBox.Text = "jd@yopmail.com";
-            PasswordBox.Password = "a123456";
+            PasswordBox.Password = "a12345";
         }
 
         private async void LoginButtonClick(object sender, RoutedEventArgs e)
