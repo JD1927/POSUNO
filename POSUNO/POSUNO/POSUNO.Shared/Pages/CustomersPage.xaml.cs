@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.UI.Popups;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
@@ -56,10 +57,20 @@ namespace POSUNO.Pages
             CustomersListView.ItemsSource = Customers;
         }
 
-        private void EditTapped(object sender, TappedRoutedEventArgs e)
+        private async void AddCustomerClick(object sender, RoutedEventArgs e)
         {
+            Customer customer = new Customer();
+            CustomerDialog dialog = new CustomerDialog(customer);
+            await dialog.ShowAsync();
         }
-
+        private async void EditTapped(object sender, TappedRoutedEventArgs e)
+        {
+            Customer customer = Customers[CustomersListView.SelectedIndex];
+            customer.IsEdit = true;
+            CustomerDialog dialog = new CustomerDialog(customer);
+            await dialog.ShowAsync();
+        }
+        
         private void DeleteTapped(object sender, TappedRoutedEventArgs e)
         {
         }
