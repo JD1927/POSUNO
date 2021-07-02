@@ -4,6 +4,7 @@ using POSUNO.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -60,19 +61,60 @@ namespace POSUNO.Pages
         private async void AddCustomerClick(object sender, RoutedEventArgs e)
         {
             Customer customer = new Customer();
-            CustomerDialog dialog = new CustomerDialog(customer);
-            await dialog.ShowAsync();
+            CustomerDialog customerDialog = new CustomerDialog(customer);
+            await customerDialog.ShowAsync();
+            if (!customer.WasSaved)
+            {
+                return;
+            }
+            customer.User = MainPage.GetInstance().User;
+            Loader loader = new Loader("Por favor espere...");
+            loader.Show();
+            APIResponse response = await APIService.PostAsync("customers", customer);
+            loader.Close();
+            if (!response.IsSuccess)
+            {
+                MessageDialog dialog = new MessageDialog(response.Message, "Error");
+                await dialog.ShowAsync();
+                return;
+            }
+
+            Customer newCustomer = (Customer)response.Result;
+            Customers.Add(newCustomer);
+            RefreshList();
         }
         private async void EditTapped(object sender, TappedRoutedEventArgs e)
         {
             Customer customer = Customers[CustomersListView.SelectedIndex];
             customer.IsEdit = true;
-            CustomerDialog dialog = new CustomerDialog(customer);
-            await dialog.ShowAsync();
+            CustomerDialog customerDialog = new CustomerDialog(customer);
+            await customerDialog.ShowAsync();
+
+            if (!customer.WasSaved)
+            {
+                return;
+            }
+            customer.User = MainPage.GetInstance().User;
+            Loader loader = new Loader("Por favor espere...");
+            loader.Show();
+            APIResponse response = await APIService.PutAsync("customers", customer, customer.Id);
+            loader.Close();
+            if (!response.IsSuccess)
+            {
+                MessageDialog dialog = new MessageDialog(response.Message, "Error");
+                await dialog.ShowAsync();
+                return;
+            }
+
+            Customer newCustomer = (Customer)response.Result;
+            Customer oldCustomer = Customers.FirstOrDefault(c => c.Id == newCustomer.Id);
+            oldCustomer = newCustomer;
+            RefreshList();
         }
         
         private void DeleteTapped(object sender, TappedRoutedEventArgs e)
         {
+
         }
     }
 }
