@@ -182,5 +182,44 @@ namespace POSUNO.Helpers
                 };
             }
         }
+
+        public static async Task<APIResponse> DeleteAsync(string controller, int id)
+        {
+            try
+            {
+                HttpClientHandler handler = new HttpClientHandler()
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+                string url = Settings.GetApiUrl();
+                HttpClient client = new HttpClient(handler)
+                {
+                    BaseAddress = new Uri(url)
+                };
+                HttpResponseMessage response = await client.DeleteAsync($"api/{controller}/{id}");
+                string result = await response.Content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new APIResponse()
+                    {
+                        IsSuccess = false,
+                        Message = result,
+                    };
+                }
+
+                return new APIResponse()
+                {
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new APIResponse()
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                };
+            }
+        }
     }
 }

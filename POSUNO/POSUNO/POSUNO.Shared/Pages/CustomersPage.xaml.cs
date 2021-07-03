@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -112,9 +113,42 @@ namespace POSUNO.Pages
             RefreshList();
         }
         
-        private void DeleteTapped(object sender, TappedRoutedEventArgs e)
+        private async void DeleteTapped(object sender, TappedRoutedEventArgs e)
         {
+            ContentDialogResult result = await ConfirmDeleteAsync();
+            if (result != ContentDialogResult.Primary)
+            {
+                return;
+            }
+            Loader loader = new Loader("Por favor espere...");
+            loader.Show();
 
+            Customer currentCustomer = Customers[CustomersListView.SelectedIndex];
+            APIResponse response = await APIService.DeleteAsync("customers", currentCustomer.Id);
+            loader.Close();
+
+            if (!response.IsSuccess)
+            {
+                MessageDialog dialog = new MessageDialog(response.Message, "Error");
+                await dialog.ShowAsync();
+                return;
+            }
+            List<Customer> customers = Customers.Where(c => c.Id != currentCustomer.Id).ToList();
+            Customers = new ObservableCollection<Customer>(customers);
+            RefreshList();
+        }
+
+        private async Task<ContentDialogResult> ConfirmDeleteAsync()
+        {
+            ContentDialog confirmDialog = new ContentDialog()
+            {
+                Title = "Confirmación",
+                Content = "¿Estás seguro de que deseas eliminar el registro?",
+                PrimaryButtonText = "Sí",
+                CloseButtonText = "No"
+            };
+
+            return await confirmDialog.ShowAsync();
         }
     }
 }
