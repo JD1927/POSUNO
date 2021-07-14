@@ -20,15 +20,15 @@ namespace POSUNO.Pages
             _instance = this;
         }
 
-        public User User { get; set; }
+        public TokenResponse TokenResponse { get; set; }
 
         public static MainPage GetInstance() => _instance;
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            User = (User)e.Parameter;
-            WelcomeTextBlock.Text = $"Bienvenido {User.FullName}";
+            TokenResponse = (TokenResponse)e.Parameter;
+            WelcomeTextBlock.Text = $"Bienvenido {TokenResponse.User.FullName}";
             MyFrame.Navigate(typeof(CustomersPage));
         }
 

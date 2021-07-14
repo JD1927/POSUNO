@@ -1,16 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using POSUNO.API.Data;
 using POSUNO.API.Data.Entities;
+using POSUNO.API.Models;
 
 namespace POSUNO.API.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     public class CustomersController : ControllerBase
     {
@@ -45,21 +48,36 @@ namespace POSUNO.API.Controllers
         // PUT: api/Customers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomer(int id, Customer customer)
+        public async Task<IActionResult> PutCustomer(int id, CustomerRequest request)
         {
-            if (id != customer.Id)
+            if (id != request.Id)
             {
                 return BadRequest();
             }
 
-            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == customer.User.Email);
+            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
                 return BadRequest("Usuario no existe.");
             }
-            customer.User = user;
+            Customer customer = await _context.Customers.FindAsync(id);
             _context.Entry(customer).State = EntityState.Modified;
 
+            if (customer == null)
+            {
+                return BadRequest("Cliente no existe.");
+            }
+
+            customer.FirstName = request.FirstName;
+            customer.LastName = request.LastName;
+            customer.PhoneNumber = request.PhoneNumber;
+            customer.Address = request.Address;
+            customer.Email = request.Email;
+            customer.IsActive = request.IsActive;
+            customer.User = user;
+
+            _context.Entry(customer).State = EntityState.Modified;
             try
             {
                 await _context.SaveChangesAsync();
@@ -82,20 +100,30 @@ namespace POSUNO.API.Controllers
         // POST: api/Customers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
+        public async Task<ActionResult<Customer>> PostCustomer(CustomerRequest request)
         {
-            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == customer.User.Email);
+            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
                 return BadRequest("Usuario no existe.");
             }
 
-            Customer oldCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == customer.Email);
+            Customer oldCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
             if (oldCustomer != null)
             {
                 return BadRequest("Ya hay un cliente registrado con ese email.");
             }
-            customer.User = user;
+            Customer customer = new Customer
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                PhoneNumber = request.PhoneNumber,
+                Address = request.Address,
+                Email = request.Email,
+                IsActive = request.IsActive,
+                User = user,
+            };
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 

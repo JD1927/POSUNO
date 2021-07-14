@@ -35,7 +35,7 @@ namespace POSUNO.Pages
         {
             Loader loader = new Loader("Por favor espere...");
             loader.Show();
-            APIResponse response = await APIService.GetListAsync<Product>("products");
+            APIResponse response = await APIService.GetListAsync<Product>("products", MainPage.GetInstance().TokenResponse.Token);
             loader.Close();
             if (!response.IsSuccess)
             {

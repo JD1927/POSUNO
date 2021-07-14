@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using POSUNO.API.Data;
 using POSUNO.API.Data.Entities;
 using POSUNO.API.Helpers;
+using System.Text;
 
 namespace POSUNO.API
 {
@@ -40,6 +42,19 @@ namespace POSUNO.API
             {
                 config.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            services
+                .AddAuthentication()
+                .AddCookie()
+                .AddJwtBearer(config =>
+                {
+                    config.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = Configuration["Tokens:Issuer"],
+                        ValidAudience = Configuration["Tokens:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"]))
+                    };
+                });
 
             services.AddTransient<SeedDB>();
             services.AddScoped<IUserHelper, UserHelper>();

@@ -38,7 +38,7 @@ namespace POSUNO.Pages
         {
             Loader loader = new Loader("Por favor espere...");
             loader.Show();
-            APIResponse response = await APIService.GetListAsync<Customer>("customers");
+            APIResponse response = await APIService.GetListAsync<Customer>("customers", MainPage.GetInstance().TokenResponse.Token);
             loader.Close();
             if (!response.IsSuccess)
             {
@@ -68,10 +68,9 @@ namespace POSUNO.Pages
             {
                 return;
             }
-            customer.User = MainPage.GetInstance().User;
             Loader loader = new Loader("Por favor espere...");
             loader.Show();
-            APIResponse response = await APIService.PostAsync("customers", customer);
+            APIResponse response = await APIService.PostAsync("customers", customer, MainPage.GetInstance().TokenResponse.Token);
             loader.Close();
             if (!response.IsSuccess)
             {
@@ -95,10 +94,9 @@ namespace POSUNO.Pages
             {
                 return;
             }
-            customer.User = MainPage.GetInstance().User;
             Loader loader = new Loader("Por favor espere...");
             loader.Show();
-            APIResponse response = await APIService.PutAsync("customers", customer, customer.Id);
+            APIResponse response = await APIService.PutAsync("customers", customer, customer.Id, MainPage.GetInstance().TokenResponse.Token);
             loader.Close();
             if (!response.IsSuccess)
             {
@@ -124,7 +122,7 @@ namespace POSUNO.Pages
             loader.Show();
 
             Customer currentCustomer = Customers[CustomersListView.SelectedIndex];
-            APIResponse response = await APIService.DeleteAsync("customers", currentCustomer.Id);
+            APIResponse response = await APIService.DeleteAsync("customers", currentCustomer.Id, MainPage.GetInstance().TokenResponse.Token);
             loader.Close();
 
             if (!response.IsSuccess)

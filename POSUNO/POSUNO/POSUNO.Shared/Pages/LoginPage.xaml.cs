@@ -19,8 +19,8 @@ namespace POSUNO.Pages
         public LoginPage()
         {
             InitializeComponent();
-            EmailTextBox.Text = "jd@yopmail.com";
-            PasswordBox.Password = "a12345";
+            EmailTextBox.Text = "ja@yopmail.com";
+            PasswordBox.Password = "123456";
         }
 
         private async void LoginButtonClick(object sender, RoutedEventArgs e)
@@ -42,17 +42,11 @@ namespace POSUNO.Pages
             
             if (!response.IsSuccess)
             {
-                messageDialog = new MessageDialog(response.Message, "Error");
-                await messageDialog.ShowAsync();
-            }
-            User user = (User)response.Result;
-            if (user == null)
-            {
                 messageDialog = new MessageDialog("Usuario y/o contraseña inválidos", "Error");
                 await messageDialog.ShowAsync();
-                return;
             }
-            Frame.Navigate(typeof(MainPage), user);
+            TokenResponse tokenResponse = (TokenResponse)response.Result;
+            Frame.Navigate(typeof(MainPage), tokenResponse);
         }
 
         private async Task<bool> ValidForm()
